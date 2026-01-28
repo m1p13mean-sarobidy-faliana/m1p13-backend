@@ -1,0 +1,574 @@
+openapi: '3.0.3'
+info:
+  title: Centre commercial
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+
+security:
+  - BearerAuth: [ ]
+
+paths:
+  /login:
+    post:
+      tags:
+        - Security
+      security: []
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+      responses:
+        '200':
+          description: OK
+  /login-mfa:
+    post:
+      tags:
+        - Security
+      security: []
+      operationId: loginMfa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginMfa"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  bearer: 
+                    type: string
+  /whoami:
+    get:
+      tags:
+        - Security
+      operationId: whoami
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/Whoami"
+  /shops:
+    get:
+      tags:
+        - Shop
+      operationId: getAllShop
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: shop_manager_id
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - ACTIVATED
+              - PENDING
+              - SUSPENDED
+      responses:
+        '200': 
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: "#/components/schemas/Shop"
+    put:
+      tags:
+        - Shop
+      operationId: crupdateShop
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/CrupdateShop"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/Shop"
+  /shop-status:
+    post: 
+      tags:
+        - Shop
+      operationId: updateShopStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              type: array
+              items:
+                properties:
+                  shop_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                      - ACTIVATED
+                      - PENDING
+                      - SUSPENDED
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: "#/components/schemas/Shop"
+  /catalogs:
+    get:
+      tags:
+        - Catalog 
+      operationId: getAllCatalog
+      parameters:
+        - name: name
+          in: query
+          schema:
+           type: string
+        - name: shop
+          in: query
+          schema:
+            type: string
+        - name: min_price
+          in: query
+          schema: 
+            type: number
+        - name: max_price
+          in: query
+          schema: 
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: "#/components/schemas/Catalog"
+    put: 
+      tags:
+        - Catalog
+      operationId: cruptageCatalog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/CrupdateCatalog"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: object
+                $ref: "#/components/schemas/Catalog"
+  /users:
+    get:
+      tags:
+        - User
+      operationId: getAllUser
+      parameters:
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/UserRoleEnum"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: "#/components/schemas/User"
+    put:
+      tags:
+        - User
+      operationId: crupdateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/User"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/User"
+  /user-status: 
+    post:
+      tags:
+        - User
+      operationId: userStatus
+      summary: Change user status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              type: array
+              items:
+                properties:
+                  user_id:
+                    type: string
+                  status: 
+                    type: string
+                    enum:
+                      - VALIDATED
+                      - SUSPENDED
+                      - WAITING
+      responses:
+        '200':
+          description: OK 
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /orders:
+    get:
+      tags:
+        - Order
+      operationId: getAllOrder
+      parameters:
+        - name: shop
+          in: query
+          schema:
+            type: string
+        - name: owner_id
+          in: query
+          schema:
+            type: string
+        - name: first_name
+          in: query
+          schema:
+            type: string
+        - name: last_name
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - PENDING
+              - DELIVERED
+              - CANCELED 
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    put:
+      tags:
+        - Order
+      operationId: crupdateOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/Order"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                items:
+                  $ref: "#/components/schemas/Order"
+  /order-stats:
+    get:
+      tags: 
+        - Order
+      operationId: getOrderStats
+      parameters:
+        - name: min_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: max_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: shop
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderStats"
+  /payments: 
+    get:
+      tags:
+        - Payment
+      operationId: getAllPayment
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          schema: 
+            type: string
+            enum:
+              - PENDING
+              - SUCCESS
+              - CANCELED
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    put:
+      tags:
+        - Payment
+      operationId: crupdatePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/Payment"
+      responses:
+       '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/Payment"
+components:
+  schemas:
+    User:
+      required: [id, first_name, last_name, email, phone, address, role, status]
+      properties:
+        id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        phone: 
+          type: string
+        address:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRoleEnum"
+        status: 
+          type: string
+          default: WAITING
+          enum:
+            - VALID
+            - SUSPENDED
+            - WAITING
+    Whoami:
+      required: [id, role, bearer]
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum:
+            - CUSTOMER
+            - MANAGER
+            - SHOP_MANAGER
+        bearer:
+          type: string
+    UserRoleEnum:
+      type: string
+      enum:
+        - CUSTOMER
+        - MANAGER
+        - SHOP_MANAGER
+    Login:
+      required: [email, password, fingerprint]
+      properties:
+        email: 
+          type: string
+        password: 
+          type: string
+    LoginMfa:
+      required: [code, fingerprint]
+      properties:
+        code:
+          type: string
+        fingerprint:
+          type: string
+    Shop:
+      required: [id, name, description]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        manager: 
+          $ref: "#/components/schemas/User"
+        note:
+          type: number
+          default: 0
+        status:
+          type: string
+          enum:
+            - ACTIVATED
+            - PENDING
+            - SUSPENDED
+    CrupdateShop:
+      properties:
+        id: 
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        manager_id:
+          type: string
+    Catalog:
+      required: [id, name, unit_price, shop]
+      properties:
+        id: 
+          type: string
+        name: 
+          type: string
+        unit_price:
+          type: string
+        avalaible:
+          type: number
+        shop:
+          $ref: "#/components/schemas/Shop"
+        total_order:
+          type: number
+    CrupdateCatalog:
+      required: [id, name, unit_price, shop_id]
+      properties:
+        id:
+          type: string
+        name: 
+          type: string
+        unit_price:
+          type: number
+        shop_id:
+          type: string
+    Order:
+      required: [id, catalogs, total_price, status]
+      properties:
+        id:
+          type: string
+        catalogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderCatalog"
+        total_price:
+          type: number
+        status:
+          type: string
+          default: PENDING
+          enum:
+            - PENDING
+            - DELIVERED
+            - CANCELED
+        owner:
+          $ref: "#/components/schemas/User"
+        created_at: 
+          type: string
+          format: date-time
+    OrderCatalog:
+      required: [catalogs, number, total_price]
+      properties:
+        catalog:
+          $ref: "#/components/schemas/Catalog"
+        number: 
+          type: number
+        total_price:
+          type: number
+    OrderStats:
+      properties:
+        pending:
+          type: number
+        validated:
+          type: number
+        canceled:
+          type: number
+    Payment:
+      required: [id, total_price, status, method, owner, type, created_by, created_at]
+      properties:
+        id:
+          type: string
+        method:
+          type: string
+          enum:
+            - CASH
+            - MOBILE_MONEY
+            - BANK
+        status: 
+          type: string
+          default: PENDING
+          enum:
+            - PENDING
+            - VALIDATED
+            - CANCELED
+        total_price:
+          type: string
+        type:
+          type: string
+          enum:
+            - SHOP_RENT
+            - ORDER
+        order: 
+          $ref: "#/components/schemas/Order"
+        created_by:
+          $ref: "#/components/schemas/User"
+        created_at: 
+          type: string
+          format: date-time
