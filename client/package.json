@@ -1,5 +1,6 @@
 {
   "name": "@m1p13/client",
+  "version": "1.0.0",
   "scripts": {
     "generate": "npx kubb -c kubb.config.ts",
     "ng:gen": "npx openapi-generator-cli generate -i ../docs/api.yml -g typescript-angular -o ./",
