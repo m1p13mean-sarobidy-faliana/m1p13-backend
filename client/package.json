@@ -1,7 +1,17 @@
 {
   "name": "@m1p13/client",
   "version": "1.0.0",
+  "main": "./dist/index.js",
+  "module": "./index.ts",
+  "typings": "./dist/index.d.ts",
+    "keywords": [
+    "typescript",
+    "kubb generator",
+    "openapi-client",
+    "typescript-angular"
+  ],
   "scripts": {
+    "build": "tsc",
     "generate": "npx kubb -c kubb.config.ts",
     "ng:gen": "npx openapi-generator-cli generate -i ../docs/api.yml -g typescript-angular -o ./",
     "format": "prettier --write ./"
@@ -20,5 +30,8 @@
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "zod": "^4.3.6"
+  },
+    "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
