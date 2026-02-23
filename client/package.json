@@ -1,0 +1,22 @@
+{
+  "scripts": {
+    "generate": "npx kubb -c kubb.config.ts",
+    "ng:gen": "npx openapi-generator-cli generate -i ../docs/api.yml -g typescript-angular -o ./",
+    "format": "prettier --write ./"
+  },
+  "devDependencies": {
+    "@kubb/cli": "^4.24.0",
+    "@kubb/core": "^4.24.0",
+    "@kubb/plugin-oas": "^4.24.0",
+    "@kubb/plugin-ts": "^4.24.0",
+    "@kubb/plugin-zod": "^4.24.0",
+    "@openapitools/openapi-generator-cli": "^2.29.0"
+  },
+  "dependencies": {
+    "@angular/common": "^21.1.5",
+    "@angular/core": "^21.1.5",
+    "prettier": "^3.8.1",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "zod": "^4.3.6"
+  }
+}
