@@ -1,22 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/auth.middleware');
-const { authorize, isShopOwner } = require('../middlewares/role.middleware');
+const { isShopOwner, isAdmin, authorize } = require('../middlewares/role.middleware');
 const {
   getMyShop,
-  updateMyShop,
+  createShop,
   getMyShopStats,
-  getAllShops,
-  getShopById
+  updateShop,
+  deleteShop
 } = require('../controllers/shop.controller');
 
-// Routes PUBLIQUES (pas de protection)
-router.get('/', getAllShops);           // Liste toutes les boutiques
-router.get('/:id', getShopById);        // Détails d'une boutique
-
 // Routes PROTÉGÉES - Propriétaire de boutique uniquement
-router.get('/my-shop/profile', protect, authorize('shop_manager'), getMyShop);
-router.put('/my-shop/profile', protect, authorize('shop_manager'), updateMyShop);
-router.get('/my-shop/stats', protect, authorize('shop_manager'), getMyShopStats);
+router.get('/', protect, isShopOwner, getMyShop);
+router.get('/stats', protect, isShopOwner, getMyShopStats);
+
+router.post('/create', protect, isAdmin, createShop);
+router.put('/update', protect, authorize('shop_manager','admin'), updateShop);
+router.delete('/delete', protect, isAdmin, deleteShop);
 
 module.exports = router;

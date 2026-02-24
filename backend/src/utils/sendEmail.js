@@ -78,8 +78,20 @@ const getPasswordResetTemplate = (resetLink) => {
   `;
 };
 
+// Template for MFA code
+const getMFACodeTemplate = (mfaCode) => {
+  return `
+    <h2>Votre code de vérification</h2>
+    <p>Entrez ce code pour compléter votre authentification:</p>
+    <h3 style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">${mfaCode}</h3>
+    <p>Ce code expire dans 10 minutes.</p>
+    <p>Si vous n'avez pas demandé cette vérification, ignorez cet email.</p>
+  `;
+};
+
 module.exports = {
   sendEmail,
   getVerificationEmailTemplate,
-  getPasswordResetTemplate
+  getPasswordResetTemplate,
+  getMFACodeTemplate
 };

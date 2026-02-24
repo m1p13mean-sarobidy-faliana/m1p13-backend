@@ -9,7 +9,7 @@ security:
   - BearerAuth: [ ]
 
 paths:
-  /login:
+  /api/auth/login:
     post:
       tags:
         - Security
@@ -24,7 +24,7 @@ paths:
       responses:
         '200':
           description: OK
-  /login-mfa:
+  /api/auth/login-mfa:
     post:
       tags:
         - Security
@@ -45,11 +45,18 @@ paths:
                 properties:
                   bearer: 
                     type: string
-  /whoami:
+  /api/auth/whoami:
     get:
       tags:
         - Security
       operationId: whoami
+      parameters: [
+        {
+          name: Token,
+          in: Authorization,
+          required: true
+        }
+      ]
       responses:
         '200':
           description: OK

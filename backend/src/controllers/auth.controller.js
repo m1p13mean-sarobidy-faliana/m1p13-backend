@@ -6,7 +6,7 @@ const {
   generateRefreshToken 
 } = require('../utils/generateToken');
 const { isValidEmail, isStrongPassword, isValidPhone } = require('../utils/validators');
-const { sendEmail, getVerificationEmailTemplate, getPasswordResetTemplate } = require('../utils/sendEmail');
+const { sendEmail, getVerificationEmailTemplate, getPasswordResetTemplate, getMFACodeTemplate } = require('../utils/sendEmail');
 const crypto = require('crypto');
 
 // @desc    Inscription
@@ -14,7 +14,7 @@ const crypto = require('crypto');
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { email, password, firstName, lastName, role, phone } = req.body;
+    const { email, password, first_name, last_name, role, phone } = req.body;
 
     if (!email || !password) {
       return res.status(401).json({
@@ -58,32 +58,40 @@ exports.register = async (req, res) => {
     const user = await User.create({
       email,
       password: hashedPassword,
-      firstName,
-      lastName,
-      role: role || 'customer',
+      first_name,
+      last_name,
+      role: role || 'CUSTOMER',
       phone,
-      status: role === 'shop_manager' ? 'pending' : 'active'
+      status: role === 'SHOP_MANAGER' ? 'WAITING' : 'VALID'
     });
 
-    // Générer les 2 tokens
-    const accessToken = generateAccessToken(user._id, user.role);
-    const refreshToken = generateRefreshToken(user._id, user.role);
+    // Générer et stocker le token de vérification (24h)
+    try {
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
 
+      user.verificationToken = verificationTokenHash;
+      user.verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      await user.save();
+
+      const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-email/${verificationToken}`;
+      const emailContent = getVerificationEmailTemplate(verificationLink);
+      try {
+        const sendResult = await sendEmail(user.email, 'Vérifiez votre adresse email', emailContent);
+        if (sendResult && sendResult.previewUrl) {
+          console.info('Verification email preview:', sendResult.previewUrl);
+        }
+      } catch (emailError) {
+        console.error('Erreur envoi email vérification:', emailError);
+      }
+    } catch (tokErr) {
+      console.error('Erreur génération token vérification:', tokErr);
+    }
+
+    // Ne pas retourner les tokens - ils seront générés après vérification d'email
     res.status(201).json({
       success: true,
-      message: 'Inscription réussie',
-      data: {
-        accessToken,
-        refreshToken,
-        user: {
-          id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          status: user.status
-        }
-      }
+      message: 'Inscription réussie. Veuillez vérifier votre email pour confirmer votre adresse.',
     });
 
   } catch (error) {
@@ -166,8 +174,8 @@ exports.login = async (req, res) => {
         user: {
           id: user._id,
           email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          first_name: user.first_name,
+          last_name: user.last_name,
           role: user.role,
           status: user.status,
           avatar: user.avatar
@@ -284,8 +292,8 @@ exports.getMe = async (req, res) => {
       data: {
         id: user._id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        first_name: user.first_name || user.firstName,
+        last_name: user.last_name || user.lastName,
         role: user.role,
         status: user.status,
         avatar: user.avatar,
@@ -492,13 +500,192 @@ exports.verifyEmail = async (req, res) => {
     user.verificationTokenExpires = undefined;
     await user.save();
 
+    // Générer les tokens après vérification d'email
+    const accessToken = generateAccessToken(user._id, user.role);
+    const refreshToken = generateRefreshToken(user._id, user.role);
+
     res.status(200).json({
       success: true,
-      message: 'Email vérifié avec succès'
+      message: 'Email vérifié avec succès',
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user._id,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.role,
+          status: user.status
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Erreur verify email:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erreur serveur' 
+    });
+  }
+};
+
+// @desc    Login with MFA
+// @route   POST /api/auth/login-mfa
+// @access  Public
+exports.loginMFA = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(401).json({
+        success: false,
+        message: 'Email et mot de passe requis'
+      });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(422).json({
+        success: false,
+        message: 'Email invalide'
+      });
+    }
+
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Email ou mot de passe incorrect' 
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Email ou mot de passe incorrect' 
+      });
+    }
+
+    if (user.status === 'suspended') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Votre compte a été suspendu' 
+      });
+    }
+
+    if (user.status === 'pending' && user.role === 'shop_manager') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Votre compte boutique est en attente de validation' 
+      });
+    }
+
+    // Generate 6-digit MFA code
+    const mfaCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const mfaCodeHash = crypto.createHash('sha256').update(mfaCode).digest('hex');
+
+    user.mfaCode = mfaCodeHash;
+    user.mfaCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save();
+
+    // Send MFA code email
+    const emailContent = getMFACodeTemplate(mfaCode);
+    try {
+      const sendResult = await sendEmail(user.email, 'Votre code de vérification', emailContent);
+      if (sendResult && sendResult.previewUrl) {
+        console.info('MFA code email preview:', sendResult.previewUrl);
+      }
+    } catch (emailError) {
+      console.error('Erreur envoi email MFA:', emailError);
+    }
+
+    // Return temporary session ID (could use sessionID or userId)
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    
+    res.status(200).json({
+      success: true,
+      message: 'Code de vérification envoyé à votre email',
+      data: {
+        user_id: user._id // À utiliser pour vérifier le code MFA
+      }
     });
 
   } catch (error) {
-    console.error('Erreur verify email:', error);
+    console.error('Erreur login MFA:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erreur serveur' 
+    });
+  }
+};
+
+// @desc    Verify MFA Code
+// @route   POST /api/auth/verify-mfa-code
+// @access  Public
+exports.verifyMFACode = async (req, res) => {
+  try {
+    const { user_id, code } = req.body;
+
+    if (!user_id || !code) {
+      return res.status(401).json({
+        success: false,
+        message: 'ID utilisateur et code requis'
+      });
+    }
+
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Utilisateur non trouvé' 
+      });
+    }
+
+    const mfaCodeHash = crypto.createHash('sha256').update(code).digest('hex');
+
+    if (!user.mfaCode || user.mfaCode !== mfaCodeHash) {
+      return res.status(401).json({
+        success: false,
+        message: 'Code invalide'
+      });
+    }
+
+    if (new Date() > user.mfaCodeExpires) {
+      return res.status(401).json({
+        success: false,
+        message: 'Code expiré'
+      });
+    }
+
+    // Clear MFA code
+    user.mfaCode = undefined;
+    user.mfaCodeExpires = undefined;
+    await user.save();
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user._id, user.role);
+    const refreshToken = generateRefreshToken(user._id, user.role);
+
+    res.status(200).json({
+      success: true,
+      message: 'Authentification MFA réussie',
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user._id,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.role,
+          status: user.status,
+          avatar: user.avatar
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Erreur vérification MFA:', error);
     res.status(500).json({ 
       success: false,
       message: 'Erreur serveur' 

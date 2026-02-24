@@ -37,7 +37,7 @@ exports.isAdmin = (req, res, next) => {
     });
   }
 
-  if (req.user.role !== 'admin') {
+  if (req.user.role !== 'ADMIN') {
     return res.status(403).json({
       success: false,
       message: 'Accès refusé - Admin uniquement'
@@ -58,7 +58,7 @@ exports.isShopOwner = (req, res, next) => {
     });
   }
 
-  if (req.user.role !== 'shop') {
+  if (req.user.role !== 'SHOP_MANAGER') {
     return res.status(403).json({
       success: false,
       message: 'Accès refusé - Boutique uniquement'
@@ -79,7 +79,7 @@ exports.isCustomer = (req, res, next) => {
     });
   }
 
-  if (req.user.role !== 'customer') {
+  if (req.user.role !== 'CUSTOMER') {
     return res.status(403).json({
       success: false,
       message: 'Accès refusé - Acheteur uniquement'
