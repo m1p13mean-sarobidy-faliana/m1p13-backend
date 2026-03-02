@@ -8,8 +8,8 @@ const {getAllArticles, getAllArticlesById, createArticle, updateArticle, deleteA
 
 router.get("/", protect, getAllArticles);
 router.get("/:id", protect, getAllArticlesById);
-router.post("/create/", protect, authorize('shop_manager'), createArticle);
-router.put("/update/:id", protect, authorize('shop_manager'), updateArticle);
-router.delete("/delete/:id", protect, authorize('shop_manager'), deleteArticle);
+router.post("/create/", protect, authorize('SHOP_MANAGER'), createArticle);
+router.put("/update/:id", protect, authorize('SHOP_MANAGER'), updateArticle);
+router.delete("/delete/:id", protect, authorize('SHOP_MANAGER'), deleteArticle);
 
 module.exports = router;

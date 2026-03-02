@@ -40,7 +40,7 @@ exports.protect = async (req, res, next) => {
     }
 
     // Vérifier si le compte n'est pas suspendu
-    if (req.user.status === 'suspended') {
+    if (req.user.status === 'SUSPENDED') {
       return res.status(403).json({
         success: false,
         message: 'Votre compte a été suspendu'

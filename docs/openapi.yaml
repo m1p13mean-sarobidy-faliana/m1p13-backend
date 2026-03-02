@@ -1,0 +1,1833 @@
+openapi: '3.0.3'
+info:
+  title: Centre Commercial API
+  description: |
+    API de gestion de centre commercial (MEAN stack).
+
+    ## Rôles
+    - **ADMIN** : gestion complète (boutiques, catégories, utilisateurs, stats)
+    - **SHOP_MANAGER** : gestion de sa propre boutique (produits, promotions)
+    - **CUSTOMER** : navigation, favoris, avis
+
+    ## Authentification
+    Stratégie double token JWT :
+    - **Access token** : 15 min — à envoyer dans `Authorization: Bearer <token>`
+    - **Refresh token** : 7 jours — à envoyer dans le body pour rafraîchir
+
+    Les tokens ne sont délivrés qu'après vérification de l'email.
+  version: '1.0.0'
+
+servers:
+  - url: http://localhost:3001/api
+    description: Serveur de développement
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Auth
+    description: Inscription, connexion, profil
+  - name: Admin — Shops
+    description: Gestion des boutiques (ADMIN)
+  - name: Admin — Categories
+    description: Gestion des catégories (ADMIN)
+  - name: Admin — Stats
+    description: Tableau de bord (ADMIN)
+  - name: Admin — Users
+    description: Gestion des utilisateurs (ADMIN)
+  - name: My Shop
+    description: Boutique du manager connecté (SHOP_MANAGER)
+  - name: My Products
+    description: Produits de la boutique du manager (SHOP_MANAGER)
+  - name: My Promotions
+    description: Promotions de la boutique du manager (SHOP_MANAGER)
+  - name: Public
+    description: Consultation publique (sans authentification)
+  - name: Customer
+    description: Fonctionnalités acheteur (CUSTOMER)
+  - name: Articles
+    description: Articles (SHOP_MANAGER / tous les authentifiés)
+
+# ===========================================================================
+# PATHS
+# ===========================================================================
+paths:
+
+  # ---------------------------------------------------------------------------
+  # AUTH
+  # ---------------------------------------------------------------------------
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: register
+      summary: Inscription
+      description: |
+        Crée un compte. Les SHOP_MANAGER sont mis en statut WAITING (approbation admin requise).
+        Un email de vérification est envoyé — les tokens JWT ne sont délivrés qu'après `/auth/verify-email/:token`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+      responses:
+        '201':
+          description: Inscription réussie, email de vérification envoyé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: login
+      summary: Connexion standard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthTokens'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /auth/login-mfa:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: loginMfa
+      summary: Connexion MFA — étape 1
+      description: Valide les identifiants et envoie un code à 6 chiffres par email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: Code MFA envoyé par email
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user_id:
+                            type: string
+                            description: ID à fournir à /auth/verify-mfa-code
+
+  /auth/verify-mfa-code:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: verifyMfaCode
+      summary: Connexion MFA — étape 2
+      description: Vérifie le code reçu par email et délivre les tokens JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, code]
+              properties:
+                user_id:
+                  type: string
+                code:
+                  type: string
+                  example: '123456'
+      responses:
+        '200':
+          description: Authentification MFA réussie
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthTokens'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/verify-email/{token}:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: verifyEmail
+      summary: Vérification de l'adresse email
+      description: Valide le token reçu par email et délivre les JWT.
+      parameters:
+        - $ref: '#/components/parameters/TokenParam'
+      responses:
+        '200':
+          description: Email vérifié, tokens délivrés
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthTokens'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh-token:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: refreshToken
+      summary: Rafraîchir l'access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Nouveau access token généré
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+                          refreshToken:
+                            type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: forgotPassword
+      summary: Demande de réinitialisation de mot de passe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Email de réinitialisation envoyé (même réponse si l'email n'existe pas)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+
+  /auth/reset-password/{token}:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: resetPassword
+      summary: Réinitialisation du mot de passe
+      parameters:
+        - $ref: '#/components/parameters/TokenParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password, confirmPassword]
+              properties:
+                password:
+                  type: string
+                  format: password
+                confirmPassword:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Mot de passe réinitialisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /auth/whoami:
+    get:
+      tags: [Auth]
+      operationId: whoami
+      summary: Profil de l'utilisateur connecté
+      responses:
+        '200':
+          description: Profil retourné
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/profile:
+    put:
+      tags: [Auth]
+      operationId: updateProfile
+      summary: Modifier son profil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileInput'
+      responses:
+        '200':
+          description: Profil mis à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Déconnexion
+      responses:
+        '200':
+          description: Déconnecté avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+
+  # ---------------------------------------------------------------------------
+  # ADMIN — SHOPS
+  # ---------------------------------------------------------------------------
+  /admin/shops:
+    get:
+      tags: [Admin — Shops]
+      operationId: adminGetAllShops
+      summary: Lister toutes les boutiques
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ShopStatus'
+      responses:
+        '200':
+          description: Liste des boutiques
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Shop'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/shops/{id}:
+    get:
+      tags: [Admin — Shops]
+      operationId: adminGetShopById
+      summary: Détail d'une boutique
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Boutique retournée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Shop'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Admin — Shops]
+      operationId: adminDeleteShop
+      summary: Supprimer une boutique (cascade produits + promotions)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Boutique supprimée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin/shops/{id}/approve:
+    put:
+      tags: [Admin — Shops]
+      operationId: approveShop
+      summary: Approuver une boutique (→ ACTIVE, manager → VALID)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Boutique approuvée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Shop'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin/shops/{id}/suspend:
+    put:
+      tags: [Admin — Shops]
+      operationId: suspendShop
+      summary: Suspendre une boutique (→ SUSPENDED)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Boutique suspendue
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Shop'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # ADMIN — CATEGORIES
+  # ---------------------------------------------------------------------------
+  /admin/categories:
+    get:
+      tags: [Admin — Categories]
+      operationId: adminGetAllCategories
+      summary: Lister les catégories
+      responses:
+        '200':
+          description: Liste des catégories
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Category'
+    post:
+      tags: [Admin — Categories]
+      operationId: adminCreateCategory
+      summary: Créer une catégorie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '201':
+          description: Catégorie créée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Category'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /admin/categories/{id}:
+    put:
+      tags: [Admin — Categories]
+      operationId: adminUpdateCategory
+      summary: Modifier une catégorie
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '200':
+          description: Catégorie mise à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Category'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Admin — Categories]
+      operationId: adminDeleteCategory
+      summary: Supprimer une catégorie
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Catégorie supprimée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # ADMIN — STATS
+  # ---------------------------------------------------------------------------
+  /admin/stats/dashboard:
+    get:
+      tags: [Admin — Stats]
+      operationId: getDashboardStats
+      summary: Statistiques du tableau de bord
+      responses:
+        '200':
+          description: Statistiques
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DashboardStats'
+
+  # ---------------------------------------------------------------------------
+  # ADMIN — USERS
+  # ---------------------------------------------------------------------------
+  /users:
+    get:
+      tags: [Admin — Users]
+      operationId: adminGetAllUsers
+      summary: Lister tous les utilisateurs
+      responses:
+        '200':
+          description: Liste des utilisateurs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+    post:
+      tags: [Admin — Users]
+      operationId: adminCreateUser
+      summary: Créer un utilisateur manuellement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+      responses:
+        '201':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+
+  /users/search:
+    get:
+      tags: [Admin — Users]
+      operationId: adminSearchUsers
+      summary: Rechercher des utilisateurs
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: Recherche générique }
+        - { name: email, in: query, schema: { type: string } }
+        - { name: first_name, in: query, schema: { type: string } }
+        - { name: last_name, in: query, schema: { type: string } }
+        - { name: role, in: query, schema: { $ref: '#/components/schemas/UserRole' } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/UserStatus' } }
+      responses:
+        '200':
+          description: Résultats
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    get:
+      tags: [Admin — Users]
+      operationId: adminGetUserById
+      summary: Détail d'un utilisateur
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Utilisateur retourné
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Admin — Users]
+      operationId: adminUpdateUser
+      summary: Modifier un utilisateur
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Utilisateur mis à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Admin — Users]
+      operationId: adminDeleteUser
+      summary: Supprimer un utilisateur
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Utilisateur supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # MY SHOP (SHOP_MANAGER)
+  # ---------------------------------------------------------------------------
+  /myshop:
+    get:
+      tags: [My Shop]
+      operationId: getMyShop
+      summary: Obtenir sa boutique
+      responses:
+        '200':
+          description: Boutique du manager
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Shop'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [My Shop]
+      operationId: updateMyShop
+      summary: Modifier sa boutique
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateShopInput'
+      responses:
+        '200':
+          description: Boutique mise à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Shop'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /myshop/stats:
+    get:
+      tags: [My Shop]
+      operationId: getMyShopStats
+      summary: Statistiques de sa boutique
+      responses:
+        '200':
+          description: Statistiques
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShopStats'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /myshop/reviews:
+    get:
+      tags: [My Shop]
+      operationId: getMyShopReviews
+      summary: Avis reçus sur sa boutique
+      responses:
+        '200':
+          description: Liste des avis
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'
+
+  # ---------------------------------------------------------------------------
+  # MY PRODUCTS (SHOP_MANAGER)
+  # ---------------------------------------------------------------------------
+  /myshop/products:
+    get:
+      tags: [My Products]
+      operationId: getMyProducts
+      summary: Lister ses produits
+      responses:
+        '200':
+          description: Liste des produits
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+    post:
+      tags: [My Products]
+      operationId: createProduct
+      summary: Créer un produit (boutique doit être ACTIVE)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '201':
+          description: Produit créé
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /myshop/products/{id}:
+    put:
+      tags: [My Products]
+      operationId: updateProduct
+      summary: Modifier un produit
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '200':
+          description: Produit mis à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [My Products]
+      operationId: deleteProduct
+      summary: Supprimer un produit
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Produit supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # MY PROMOTIONS (SHOP_MANAGER)
+  # ---------------------------------------------------------------------------
+  /myshop/promotions:
+    get:
+      tags: [My Promotions]
+      operationId: getMyPromotions
+      summary: Lister ses promotions
+      responses:
+        '200':
+          description: Liste des promotions
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Promotion'
+    post:
+      tags: [My Promotions]
+      operationId: createPromotion
+      summary: Créer une promotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionInput'
+      responses:
+        '201':
+          description: Promotion créée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Promotion'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /myshop/promotions/{id}:
+    put:
+      tags: [My Promotions]
+      operationId: updatePromotion
+      summary: Modifier une promotion
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionInput'
+      responses:
+        '200':
+          description: Promotion mise à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Promotion'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [My Promotions]
+      operationId: deletePromotion
+      summary: Supprimer une promotion
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Promotion supprimée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # PUBLIC (pas d'authentification)
+  # ---------------------------------------------------------------------------
+  /public/shops:
+    get:
+      tags: [Public]
+      security: []
+      operationId: publicGetShops
+      summary: Lister les boutiques actives
+      parameters:
+        - { name: name, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string }, description: ID de la catégorie }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20 } }
+      responses:
+        '200':
+          description: Boutiques actives avec pagination
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Shop'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /public/shops/{id}:
+    get:
+      tags: [Public]
+      security: []
+      operationId: publicGetShopDetail
+      summary: Détail d'une boutique (boutique + produits + avis récents)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Détail boutique
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          shop:
+                            $ref: '#/components/schemas/Shop'
+                          products:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Product'
+                          reviews:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Review'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /public/shops/{id}/reviews:
+    get:
+      tags: [Public]
+      security: []
+      operationId: publicGetShopReviews
+      summary: Avis d'une boutique
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Liste des avis
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'
+
+  /public/products:
+    get:
+      tags: [Public]
+      security: []
+      operationId: publicGetProducts
+      summary: Lister les produits (boutiques actives uniquement)
+      parameters:
+        - { name: name, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string }, description: ID de la catégorie }
+        - { name: minPrice, in: query, schema: { type: number } }
+        - { name: maxPrice, in: query, schema: { type: number } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20 } }
+      responses:
+        '200':
+          description: Produits avec pagination
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /public/products/{id}:
+    get:
+      tags: [Public]
+      security: []
+      operationId: publicGetProductById
+      summary: Détail d'un produit
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Produit
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /public/promotions:
+    get:
+      tags: [Public]
+      security: []
+      operationId: publicGetActivePromotions
+      summary: Promotions en cours
+      responses:
+        '200':
+          description: Promotions actives (startDate ≤ now ≤ endDate)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Promotion'
+
+  # ---------------------------------------------------------------------------
+  # CUSTOMER
+  # ---------------------------------------------------------------------------
+  /customer/favorites:
+    get:
+      tags: [Customer]
+      operationId: getMyFavorites
+      summary: Mes boutiques favorites
+      responses:
+        '200':
+          description: Liste des favoris
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Favorite'
+
+  /customer/favorites/{shopId}:
+    post:
+      tags: [Customer]
+      operationId: addFavorite
+      summary: Ajouter une boutique aux favoris
+      parameters:
+        - { name: shopId, in: path, required: true, schema: { type: string } }
+      responses:
+        '201':
+          description: Ajouté aux favoris
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Favorite'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags: [Customer]
+      operationId: removeFavorite
+      summary: Retirer une boutique des favoris
+      parameters:
+        - { name: shopId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Retiré des favoris
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /customer/shops/{shopId}/reviews:
+    post:
+      tags: [Customer]
+      operationId: createReview
+      summary: Laisser un avis sur une boutique (upsert — un seul avis par boutique)
+      parameters:
+        - { name: shopId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewInput'
+      responses:
+        '201':
+          description: Avis enregistré
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # ARTICLES (legacy)
+  # ---------------------------------------------------------------------------
+  /articles:
+    get:
+      tags: [Articles]
+      operationId: getAllArticles
+      summary: Lister les articles
+      responses:
+        '200':
+          description: Liste des articles
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Article'
+
+  /articles/{id}:
+    get:
+      tags: [Articles]
+      operationId: getArticleById
+      summary: Détail d'un article
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Article
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Article'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /articles/create:
+    post:
+      tags: [Articles]
+      operationId: createArticle
+      summary: Créer un article (SHOP_MANAGER)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleInput'
+      responses:
+        '201':
+          description: Article créé
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Article'
+
+  /articles/update/{id}:
+    put:
+      tags: [Articles]
+      operationId: updateArticle
+      summary: Modifier un article (SHOP_MANAGER)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleInput'
+      responses:
+        '200':
+          description: Article mis à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Article'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /articles/delete/{id}:
+    delete:
+      tags: [Articles]
+      operationId: deleteArticle
+      summary: Supprimer un article (SHOP_MANAGER)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Article supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# ===========================================================================
+# COMPONENTS
+# ===========================================================================
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID MongoDB de la ressource
+    TokenParam:
+      name: token
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Token de vérification (brut, non haché)
+
+  responses:
+    Unauthorized:
+      description: Non authentifié — token manquant ou invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Forbidden:
+      description: Accès interdit — rôle insuffisant ou compte suspendu
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    NotFound:
+      description: Ressource non trouvée
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Conflict:
+      description: Conflit — ressource déjà existante
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    UnprocessableEntity:
+      description: Données invalides (validation échouée)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+
+    # --- Envelopes ---
+    SuccessEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+    SuccessMessage:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+    ErrorEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+    # --- Enums ---
+    UserRole:
+      type: string
+      enum: [CUSTOMER, SHOP_MANAGER, ADMIN]
+
+    UserStatus:
+      type: string
+      enum: [VALID, SUSPENDED, WAITING]
+
+    ShopStatus:
+      type: string
+      enum: [PENDING, ACTIVE, SUSPENDED]
+
+    # --- Auth ---
+    RegisterInput:
+      type: object
+      required: [email, password, first_name, last_name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          description: Min 8 caractères, lettres + chiffres
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        phone:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    AuthTokens:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Valide 15 minutes
+        refreshToken:
+          type: string
+          description: Valide 7 jours
+        user:
+          $ref: '#/components/schemas/UserProfile'
+
+    UpdateProfileInput:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+
+    # --- Users ---
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        status:
+          $ref: '#/components/schemas/UserStatus'
+
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserProfile'
+        - type: object
+          properties:
+            emailVerified:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    # --- Categories ---
+    CategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    # --- Shops ---
+    UpdateShopInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          description: ID de la catégorie
+        hours:
+          type: string
+          example: 'Lun-Sam 9h-19h'
+        image:
+          type: string
+
+    Shop:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        manager:
+          $ref: '#/components/schemas/UserProfile'
+        category:
+          $ref: '#/components/schemas/Category'
+        note:
+          type: number
+          minimum: 0
+          maximum: 5
+          description: Note moyenne calculée à partir des avis
+        hours:
+          type: string
+        image:
+          type: string
+        status:
+          $ref: '#/components/schemas/ShopStatus'
+        createdAt:
+          type: string
+          format: date-time
+
+    ShopStats:
+      type: object
+      properties:
+        totalProducts:
+          type: integer
+        totalReviews:
+          type: integer
+        avgRating:
+          type: number
+
+    DashboardStats:
+      type: object
+      properties:
+        totalShops:
+          type: integer
+        activeShops:
+          type: integer
+        pendingShops:
+          type: integer
+        totalCustomers:
+          type: integer
+        totalProducts:
+          type: integer
+
+    # --- Products ---
+    ProductInput:
+      type: object
+      required: [name, price]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        image:
+          type: string
+        category:
+          type: string
+          description: ID de la catégorie
+        isActive:
+          type: boolean
+          default: true
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        image:
+          type: string
+        shop:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Shop'
+        category:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Category'
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    # --- Promotions ---
+    PromotionInput:
+      type: object
+      required: [product, discountPercent, startDate, endDate]
+      properties:
+        product:
+          type: string
+          description: ID du produit
+        discountPercent:
+          type: integer
+          minimum: 1
+          maximum: 100
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+          default: true
+
+    Promotion:
+      type: object
+      properties:
+        id:
+          type: string
+        product:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Product'
+        shop:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Shop'
+        discountPercent:
+          type: integer
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    # --- Reviews ---
+    ReviewInput:
+      type: object
+      required: [rating]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          maxLength: 1000
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/UserProfile'
+        shop:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    # --- Favorites ---
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          type: string
+        shop:
+          $ref: '#/components/schemas/Shop'
+        createdAt:
+          type: string
+          format: date-time
+
+    # --- Articles (legacy) ---
+    ArticleInput:
+      type: object
+      required: [title, content, price]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        price:
+          type: number
+
+    Article:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        price:
+          type: number
+        createdAt:
+          type: string
+          format: date-time

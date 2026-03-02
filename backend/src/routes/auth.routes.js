@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  register, 
-  login, 
-  getMe, 
+const {
+  register,
+  login,
+  getMe,
   refreshToken,
   logout,
   forgotPassword,
   resetPassword,
   verifyEmail,
   loginMFA,
-  verifyMFACode
+  verifyMFACode,
+  updateProfile
 } = require('../controllers/auth.controller');
 const { protect } = require('../middlewares/auth.middleware');
 
@@ -26,6 +27,7 @@ router.post('/verify-email/:token', verifyEmail);
 
 // Routes protégées
 router.get('/whoami', protect, getMe);
+router.put('/profile', protect, updateProfile);
 router.post('/logout', protect, logout);
 
 module.exports = router;

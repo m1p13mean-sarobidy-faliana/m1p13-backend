@@ -64,11 +64,12 @@ paths:
             application/json:
               schema: 
                 $ref: "#/components/schemas/Whoami"
-  /shops:
+  /api/shops:
     get:
       tags:
         - Shop
       operationId: getAllShop
+      description: Get all shops with optional filters, require ADMIN role
       parameters:
         - name: name
           in: query
@@ -112,7 +113,7 @@ paths:
             application/json:
               schema: 
                 $ref: "#/components/schemas/Shop"
-  /shop-status:
+  /api/shops/shop-status:
     post: 
       tags:
         - Shop

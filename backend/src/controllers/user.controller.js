@@ -1,44 +1,40 @@
 const User = require("../models/user.model");
 
-// Get all users
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
-    res.json(users);
+    const users = await User.find().select('-password');
+    res.json({ success: true, data: users });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 };
 
-// Get by ID
 exports.getAllUsersById = async (req, res) => {
   try {
-    const users = await User.find({ _id: req.params.id });
-    res.json(users);
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Utilisateur non trouvé" });
+    }
+    res.json({ success: true, data: user });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 };
 
-// Create new user
 exports.createUser = async (req, res) => {
   try {
     const newUser = new User(req.body);
     await newUser.save();
-    res.status(201).json(newUser);
+    res.status(201).json({ success: true, message: "Utilisateur créé", data: newUser });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// Search users by any field
-// Search users by query params (email, first_name, last_name, phone, role, status)
-// Example: /api/users/search?email=john@example.com&status=VALID
 exports.searchUsers = async (req, res) => {
   try {
     const { email, first_name, last_name, phone, role, status, q } = req.query;
 
-    // Si param générique 'q' fourni, faire une recherche OR sur plusieurs champs
     if (q && q.trim() !== '') {
       const generic = q.trim();
       const searchQuery = {
@@ -51,11 +47,10 @@ exports.searchUsers = async (req, res) => {
           { status: { $regex: generic, $options: 'i' } }
         ]
       };
-      const users = await User.find(searchQuery);
+      const users = await User.find(searchQuery).select('-password');
       return res.status(200).json({ success: true, count: users.length, data: users });
     }
 
-    // Sinon construire une requête AND selon les params fournis
     const searchQuery = {};
     if (email) searchQuery.email = { $regex: email, $options: 'i' };
     if (first_name) searchQuery.first_name = { $regex: first_name, $options: 'i' };
@@ -67,11 +62,11 @@ exports.searchUsers = async (req, res) => {
     if (Object.keys(searchQuery).length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Au moins un paramètre de recherche requis (email, first_name, last_name, phone, role, status) ou q'
+        message: 'Au moins un paramètre de recherche requis'
       });
     }
 
-    const users = await User.find(searchQuery);
+    const users = await User.find(searchQuery).select('-password');
     return res.status(200).json({ success: true, count: users.length, data: users });
   } catch (error) {
     console.error('Erreur recherche utilisateurs:', error);
@@ -79,22 +74,26 @@ exports.searchUsers = async (req, res) => {
   }
 };
 
-// Update by ID
 exports.updateUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(user);
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true }).select('-password');
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Utilisateur non trouvé" });
+    }
+    res.json({ success: true, message: "Utilisateur mis à jour", data: user });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// Delete by ID
 exports.deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "User deleted" });
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Utilisateur non trouvé" });
+    }
+    res.json({ success: true, message: "Utilisateur supprimé" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 };

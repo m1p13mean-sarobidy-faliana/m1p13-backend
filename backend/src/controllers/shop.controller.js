@@ -3,47 +3,46 @@ const User = require('../models/user.model');
 
 exports.createShop = async (req, res) => {
   try {
-    // Seul ADMIN peut créer une boutique pour un manager existant
     const manager = await User.findById(req.body.manager);
     if (!manager || manager.role !== 'SHOP_MANAGER') {
-      return res.status(400).json({ message: 'Manager invalide' });
+      return res.status(400).json({ success: false, message: 'Manager invalide' });
     }
     const { name, description } = req.body;
     const newShop = new Shop({
       name,
       description,
-      manager,
+      manager: manager._id,
       note: 0,
     });
 
     await newShop.save();
-    res.status(201).json(newShop);
+    res.status(201).json({ success: true, message: 'Boutique créée', data: newShop });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
 exports.getAllShops = async (req, res) => {
   try {
-    const shops = await Shop.find().populate('owner', 'first_name last_name email');
-    res.json(shops);
+    const shops = await Shop.find().populate('manager', 'first_name last_name email');
+    res.json({ success: true, data: shops });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
 exports.getShopById = async (req, res) => {
   try {
-    const shop = await Shop.findById(req.params.id).populate('owner', 'first_name last_name email');
+    const shop = await Shop.findById(req.params.id).populate('manager', 'first_name last_name email');
     if (!shop) {
-      return res.status(404).json({ message: 'Shop not found' });
+      return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
     }
-    res.json(shop);
+    res.json({ success: true, data: shop });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
@@ -53,113 +52,140 @@ exports.updateShop = async (req, res) => {
     const shop = await Shop.findById(req.params.id);
 
     if (!shop) {
-      return res.status(404).json({ message: 'Shop not found' });
+      return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
     }
 
-    // Vérifier que l'utilisateur est le propriétaire de la boutique ou un admin
-    if (shop.owner.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Unauthorized' });
+    if (shop.manager.toString() !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, message: 'Non autorisé' });
     }
 
     shop.name = name || shop.name;
     shop.description = description || shop.description;
-    if (status) {
-      shop.status = status; // Seul un admin peut changer le statut
+    if (status && req.user.role === 'ADMIN') {
+      shop.status = status;
     }
 
     await shop.save();
-    res.json(shop);
+    res.json({ success: true, message: 'Boutique mise à jour', data: shop });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
-// ONLY ADMIN CAN DELETE
 exports.deleteShop = async (req, res) => {
   try {
     const shop = await Shop.findById(req.params.id);
 
     if (!shop) {
-      return res.status(404).json({ message: 'Shop not found' });
+      return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
     }
 
-    // Vérifier que l'utilisateur est le propriétaire de la boutique ou un admin
-    if (shop.owner.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Unauthorized' });
+    if (shop.manager.toString() !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, message: 'Non autorisé' });
     }
 
-    await shop.remove();
-    res.json({ message: 'Shop deleted' });
+    await Shop.findByIdAndDelete(shop._id);
+    res.json({ success: true, message: 'Boutique supprimée' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
 // Shop Manager
 exports.getMyShop = async (req, res) => {
-    try {
-        const shop = await Shop.findOne({ manager: req.user.id }).populate('manager', 'first_name last_name email');
-        if (!shop) {
-            return res.status(404).json({ message: 'Shop not found' });
-        }
-        res.json(shop);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+  try {
+    const shop = await Shop.findOne({ manager: req.user.id }).populate('manager', 'first_name last_name email');
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
     }
+    res.json({ success: true, data: shop });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
 };
 
 exports.updateMyShop = async (req, res) => {
-    try {
-        const { name, description } = req.body;
-        const shop = await Shop.findOne({ owner: req.user.id });
+  try {
+    const { name, description, category, hours, image } = req.body;
+    const shop = await Shop.findOne({ manager: req.user.id });
 
-        if (!shop) {
-            return res.status(404).json({ message: 'Shop not found' });
-        }
-
-        shop.name = name || shop.name;
-        shop.description = description || shop.description;
-
-        await shop.save();
-        res.json(shop);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
     }
+
+    if (name) shop.name = name;
+    if (description) shop.description = description;
+    if (category !== undefined) shop.category = category;
+    if (hours !== undefined) shop.hours = hours;
+    if (image !== undefined) shop.image = image;
+
+    await shop.save();
+    res.json({ success: true, message: 'Boutique mise à jour', data: shop });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
 };
 
 exports.getMyShopStats = async (req, res) => {
-    try {
-        const shop = await Shop.findOne({ owner: req.user.id });
+  try {
+    const shop = await Shop.findOne({ manager: req.user.id });
 
-        if (!shop) {
-            return res.status(404).json({ message: 'Shop not found' });
-        }
-
-        // Placeholder pour les statistiques (ex: nombre de produits, ventes, etc.)
-        const stats = {
-            totalProducts: 0, // À implémenter
-            totalSales: 0 // À implémenter
-        };
-
-        res.json(stats);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
     }
+
+    const Product = require('../models/product.model');
+    const Review = require('../models/review.model');
+
+    const totalProducts = await Product.countDocuments({ shop: shop._id });
+    const totalReviews = await Review.countDocuments({ shop: shop._id });
+    const avgRatingResult = await Review.aggregate([
+      { $match: { shop: shop._id } },
+      { $group: { _id: null, avgRating: { $avg: '$rating' } } }
+    ]);
+    const avgRating = avgRatingResult.length > 0 ? Math.round(avgRatingResult[0].avgRating * 10) / 10 : 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalProducts,
+        totalReviews,
+        avgRating
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
 };
 
-// Search users by any field
-// Search shops by query params (name, description, status)
-// Example: /api/shops/search?name=MyShop&status=ACTIVATED
+exports.getMyShopReviews = async (req, res) => {
+  try {
+    const shop = await Shop.findOne({ manager: req.user.id });
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
+    }
+
+    const Review = require('../models/review.model');
+    const reviews = await Review.find({ shop: shop._id })
+      .populate('user', 'first_name last_name')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, data: reviews });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
 exports.searchShops = async (req, res) => {
   try {
     const { name, description, status, q } = req.query;
 
-    // Si param générique 'q' fourni, faire une recherche OR sur plusieurs champs
     if (q && q.trim() !== '') {
       const generic = q.trim();
       const searchQuery = {
@@ -173,7 +199,6 @@ exports.searchShops = async (req, res) => {
       return res.status(200).json({ success: true, count: shops.length, data: shops });
     }
 
-    // Sinon construire une requête AND selon les params fournis
     const searchQuery = {};
     if (name) searchQuery.name = { $regex: name, $options: 'i' };
     if (description) searchQuery.description = { $regex: description, $options: 'i' };

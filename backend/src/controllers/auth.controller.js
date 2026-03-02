@@ -140,24 +140,17 @@ exports.login = async (req, res) => {
       });
     }
 
-    if (user.status === 'suspended') {
-      return res.status(403).json({ 
+    if (user.status === 'SUSPENDED') {
+      return res.status(403).json({
         success: false,
-        message: 'Votre compte a été suspendu' 
+        message: 'Votre compte a été suspendu'
       });
     }
 
-    if (user.status === 'payment_required') {
-      return res.status(402).json({
+    if (user.status === 'WAITING' && user.role === 'SHOP_MANAGER') {
+      return res.status(403).json({
         success: false,
-        message: 'Paiement requis pour activer votre compte'
-      });
-    }
-
-    if (user.status === 'pending' && user.role === 'shop_manager') {
-      return res.status(403).json({ 
-        success: false,
-        message: 'Votre compte boutique est en attente de validation' 
+        message: 'Votre compte boutique est en attente de validation'
       });
     }
 
@@ -228,17 +221,10 @@ exports.refreshToken = async (req, res) => {
       });
     }
 
-    if (user.status === 'suspended') {
+    if (user.status === 'SUSPENDED') {
       return res.status(403).json({
         success: false,
         message: 'Votre compte a été suspendu'
-      });
-    }
-
-    if (user.status === 'payment_required') {
-      return res.status(402).json({
-        success: false,
-        message: 'Paiement requis pour activer votre compte'
       });
     }
 
@@ -309,6 +295,50 @@ exports.getMe = async (req, res) => {
     });
   }
 };
+// @desc    Update Profile
+// @route   PUT /api/auth/profile
+// @access  Private
+exports.updateProfile = async (req, res) => {
+  try {
+    const { first_name, last_name, phone, address } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+    }
+
+    if (first_name) user.first_name = first_name;
+    if (last_name) user.last_name = last_name;
+    if (phone !== undefined) {
+      if (phone && !isValidPhone(phone)) {
+        return res.status(422).json({ success: false, message: 'Numéro de téléphone invalide' });
+      }
+      user.phone = phone;
+    }
+    if (address !== undefined) user.address = address;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profil mis à jour',
+      data: {
+        id: user._id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+        status: user.status
+      }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour profil:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
 // @desc    Logout
 // @route   POST /api/auth/logout
 // @access  Private
@@ -566,17 +596,17 @@ exports.loginMFA = async (req, res) => {
       });
     }
 
-    if (user.status === 'suspended') {
-      return res.status(403).json({ 
+    if (user.status === 'SUSPENDED') {
+      return res.status(403).json({
         success: false,
-        message: 'Votre compte a été suspendu' 
+        message: 'Votre compte a été suspendu'
       });
     }
 
-    if (user.status === 'pending' && user.role === 'shop_manager') {
-      return res.status(403).json({ 
+    if (user.status === 'WAITING' && user.role === 'SHOP_MANAGER') {
+      return res.status(403).json({
         success: false,
-        message: 'Votre compte boutique est en attente de validation' 
+        message: 'Votre compte boutique est en attente de validation'
       });
     }
 
