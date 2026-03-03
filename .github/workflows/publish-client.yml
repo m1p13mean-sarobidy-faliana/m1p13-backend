@@ -2,6 +2,7 @@ name: Publish rest client
 
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   publish-to-npm-registry:
