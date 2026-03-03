@@ -1,0 +1,1718 @@
+{
+  "info": {
+    "_postman_id": "e5f0d76f-d9c6-4a02-a7d1-4fc8ea2662eb",
+    "name": "EXPRESS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "39839995"
+  },
+  "item": [
+    {
+      "name": "Articles",
+      "item": [
+        {
+          "name": "GET",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/articles/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "articles",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GETbyId",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/articles/698cb3e9753320dc231806e6",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "articles",
+                "698cb3e9753320dc231806e6"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CREATE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"iPhone 14 Pro\",\n    \"content\": \"Pacific grey, 256Go\",\n    \"price\": 1300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/articles/create",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "articles",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "UPDATE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OWE4MGY1ODk0YmYzOGM0M2ZkMmM1MyIsInJvbGUiOiJzaG9wX21hbmFnZXIiLCJpYXQiOjE3NzE3MzMyMzgsImV4cCI6MTc3MTczNDEzOH0.IdwZ53oYZvLdNSh7ivmqQRYRdiPLVBkH2-htcFngoJc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Article 1 Up\",\n    \"content\": \"Article content 1 UP\",\n    \"price\": 300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/articles/update/699a8115894bf38c43fd2c58",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "articles",
+                "update",
+                "699a8115894bf38c43fd2c58"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/articles/delete/699a8169894bf38c43fd2c63",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "articles",
+                "delete",
+                "699a8169894bf38c43fd2c63"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Login",
+      "item": [
+        {
+          "name": "register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"first_name\": \"Faliana\",\n    \"last_name\": \"Rakoto\",\n    \"email\": \"frakotoa@etceterum.net\",\n    \"password\": \"admin123!\",\n    \"phone\": \"123 456 789 0\",\n    \"address\": \"a900th Street, California\",\n    \"role\": \"ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/register",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get access key\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var token = jsonData.data.accessToken;",
+                  "    var refresh_token = jsonData.data.refreshToken;",
+                  "    pm.environment.set(\"token\", token);",
+                  "    pm.environment.set(\"refresh_token\", refresh_token);",
+                  "});",
+                  "var template = `",
+                  "<style type=\"text/css\">",
+                  "    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}",
+                  "    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}",
+                  "    .tftable tr {background-color:#ffffff;}",
+                  "    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}",
+                  "    .tftable tr:hover {background-color:#e0ffff;}",
+                  "</style>",
+                  "",
+                  "<table class=\"tftable\" border=\"1\">",
+                  "    <tr>",
+                  "        <th>token</th>",
+                  "    </tr>",
+                  "    <tr>",
+                  "        <td>{{response.refresh_token}}</td>",
+                  "    </tr>",
+                  "</table>",
+                  "`;",
+                  "",
+                  "function constructVisualizerPayload() {",
+                  "    var res = pm.response.json();",
+                  "    ",
+                  "    // Return an object containing the response data",
+                  "    return { response: res };",
+                  "}",
+                  "",
+                  "pm.visualizer.set(template, constructVisualizerPayload());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"frakotoa@etceterum.net\",\n    \"password\": \"admin123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/login",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login-mfa",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"frakotoa@etceterum.net\",\n  \"password\": \"admin123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/login-mfa/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "login-mfa",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/logout",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "refresh_token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OWE4MGY1ODk0YmYzOGM0M2ZkMmM1MyIsInJvbGUiOiJzaG9wX21hbmFnZXIiLCJpYXQiOjE3NzE3MzMyMzgsImV4cCI6MTc3MTczNDEzOH0.IdwZ53oYZvLdNSh7ivmqQRYRdiPLVBkH2-htcFngoJc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/refresh-token",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "refresh-token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "forgot_password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"frakotoa@etceterum.net\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/forgot-password",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "reset_password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewPassword123\",\n  \"confirmPassword\": \"NewPassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/reset-password/42dabf0b9be627fd02da254bf910bdd4d2fe1c5018f6ea3dd7e3b9d49d26dac4",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "reset-password",
+                "42dabf0b9be627fd02da254bf910bdd4d2fe1c5018f6ea3dd7e3b9d49d26dac4"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "verify_email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get access key\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var token = jsonData.data.accessToken;",
+                  "    var refresh_token = jsonData.data.refreshToken;",
+                  "    pm.environment.set(\"token\", token);",
+                  "    pm.environment.set(\"refresh_token\", refresh_token);",
+                  "});",
+                  "var template = `",
+                  "<style type=\"text/css\">",
+                  "    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}",
+                  "    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}",
+                  "    .tftable tr {background-color:#ffffff;}",
+                  "    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}",
+                  "    .tftable tr:hover {background-color:#e0ffff;}",
+                  "</style>",
+                  "",
+                  "<table class=\"tftable\" border=\"1\">",
+                  "    <tr>",
+                  "        <th>token</th>",
+                  "    </tr>",
+                  "    <tr>",
+                  "        <td>{{response.refresh_token}}</td>",
+                  "    </tr>",
+                  "</table>",
+                  "`;",
+                  "",
+                  "function constructVisualizerPayload() {",
+                  "    var res = pm.response.json();",
+                  "    ",
+                  "    // Return an object containing the response data",
+                  "    return { response: res };",
+                  "}",
+                  "",
+                  "pm.visualizer.set(template, constructVisualizerPayload());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/verify-email/f65e5cda423c4732a755a94bf3dbca57c1b34eb83f091b325c92f5798a32a594",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "verify-email",
+                "f65e5cda423c4732a755a94bf3dbca57c1b34eb83f091b325c92f5798a32a594"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "verify-mfa-code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get access key\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var token = jsonData.data.accessToken;",
+                  "    var refresh_token = jsonData.data.refreshToken;",
+                  "    pm.environment.set(\"token\", token);",
+                  "    pm.environment.set(\"refresh_token\", refresh_token);",
+                  "});",
+                  "var template = `",
+                  "<style type=\"text/css\">",
+                  "    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}",
+                  "    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}",
+                  "    .tftable tr {background-color:#ffffff;}",
+                  "    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}",
+                  "    .tftable tr:hover {background-color:#e0ffff;}",
+                  "</style>",
+                  "",
+                  "<table class=\"tftable\" border=\"1\">",
+                  "    <tr>",
+                  "        <th>token</th>",
+                  "    </tr>",
+                  "    <tr>",
+                  "        <td>{{response.refresh_token}}</td>",
+                  "    </tr>",
+                  "</table>",
+                  "`;",
+                  "",
+                  "function constructVisualizerPayload() {",
+                  "    var res = pm.response.json();",
+                  "    ",
+                  "    // Return an object containing the response data",
+                  "    return { response: res };",
+                  "}",
+                  "",
+                  "pm.visualizer.set(template, constructVisualizerPayload());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"699ea2e663d65d380a3b521b\",\n  \"code\": \"222347\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/verify-mfa-code/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "verify-mfa-code",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "whoami",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/auth/whoami",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "auth",
+                "whoami"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users-Test",
+      "item": [
+        {
+          "name": "All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/search/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                "search",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"first_name\": \"Charlie\",\n    \"last_name\": \"L'épicier\",\n    \"password\": \"Pass123!\",\n    \"email\": \"smanager@mean.itu\",\n    \"phone\": \"123 456 789 0\",\n    \"address\": \"90 Rue Montargie\",\n    \"role\": \"SHOP_MANAGER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/create/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                "create",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update-user",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"role\": \"customer\",\n    \"email\": \"test@email.org\",\n    \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/update/699c71c1c3dfe30c92521e43",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                "update",
+                "699c71c1c3dfe30c92521e43"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "user-account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/delete/699df6eff815d8f120bffb70",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                "delete",
+                "699df6eff815d8f120bffb70"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users-not-used",
+      "item": [
+        {
+          "name": "user-profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "user-profile",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/profile",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "user-password",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/users/password",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "users",
+                "password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manage-Shops",
+      "item": [
+        {
+          "name": "All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/shops",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "shops"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/myshop/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "myshop",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "approve-shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/shops/699e23067fcb7453ca70dbc6/approve",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "shops",
+                "699e23067fcb7453ca70dbc6",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "suspend-shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/shops/699e23067fcb7453ca70dbc6/suspend",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "shops",
+                "699e23067fcb7453ca70dbc6",
+                "suspend"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "del_shop",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/shops/:id",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "shops",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "en_attente",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/shops/pending",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "shops",
+                "pending"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-my-shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/myshop/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "myshop",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create-shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ma Boutique Électronique\",\n  \"description\": \"Vente de produits électroniques haute gamme et accessoires\",\n  \"manager\": \"699e1ed90996d951e3fb9fe0\",\n  \"note\": 4.5,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/myshop/create",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "myshop",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/categories",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"office tools\",\n    \"description\": \"All shops that sell office tools\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/categories",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"office tools\",\n    \"description\": \"All shops that sell office tools\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/categories/69a694bb9545c2c931b8bbf6",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                "69a694bb9545c2c931b8bbf6"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/categories/69a694bb9545c2c931b8bbf6",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                "69a694bb9545c2c931b8bbf6"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/events",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/events",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/events/:id",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "events",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/events/:id",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "events",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Stats",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/stats/dashboard",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "stats",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "mycart",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/cart/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "cart",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "addtocart",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"articleId\": \"699a8169894bf38c43fd2c63\",\n    \"quantity\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/cart/add/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "cart",
+                "add",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "remove",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"articleId\": \"699a8169894bf38c43fd2c63\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/cart/remove",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "cart",
+                "remove"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "validate",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"articleId\": \"699a8169894bf38c43fd2c63\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/cart/remove",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "cart",
+                "remove"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Order",
+      "item": [
+        {
+          "name": "myorder",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/admin/carts/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "admin",
+                "carts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "addtocart",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"articleId\": \"699a8169894bf38c43fd2c63\",\n    \"quantity\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/cart/add/",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "cart",
+                "add",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "remove",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"articleId\": \"699a8169894bf38c43fd2c63\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://m1p13-backend-sarobidy-faliana.onrender.com/api/cart/remove",
+              "protocol": "https",
+              "host": [
+                "m1p13-backend-sarobidy-faliana.onrender.com"
+              ],
+              "port": "3001",
+              "path": [
+                "api",
+                "cart",
+                "remove"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
