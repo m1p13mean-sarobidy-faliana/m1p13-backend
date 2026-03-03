@@ -1,5 +1,5 @@
 const Review = require('../models/review.model');
-const Shop = require('../models/shop.models');
+const Shop = require('../models/shop.model');
 
 exports.createReview = async (req, res) => {
   try {

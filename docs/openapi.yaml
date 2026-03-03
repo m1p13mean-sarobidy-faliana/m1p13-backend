@@ -35,6 +35,10 @@ tags:
     description: Tableau de bord (ADMIN)
   - name: Admin — Users
     description: Gestion des utilisateurs (ADMIN)
+  - name: Admin — Orders
+    description: Gestion des commandes (ADMIN)
+  - name: Admin — Carts
+    description: Gestion des paniers (ADMIN)
   - name: My Shop
     description: Boutique du manager connecté (SHOP_MANAGER)
   - name: My Products
@@ -716,6 +720,157 @@ paths:
           $ref: '#/components/responses/NotFound'
 
   # ---------------------------------------------------------------------------
+  # ADMIN — ORDERS
+  # ---------------------------------------------------------------------------
+  /admin/orders:
+    get:
+      tags: [Admin — Orders]
+      operationId: adminGetAllOrders
+      summary: Lister toutes les commandes
+      responses:
+        '200':
+          description: Liste des commandes
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+  /admin/orders/{id}:
+    get:
+      tags: [Admin — Orders]
+      operationId: adminGetOrderById
+      summary: Détail d'une commande
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Commande retournée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/orders/{id}/update-status:
+    post:
+      tags: [Admin — Orders]
+      operationId: updateOrderStatus
+      summary: Modifier le statut d'une commande
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatusInput'
+      responses:
+        '200':
+          description: Statut mis à jour
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # ADMIN — CARTS
+  # ---------------------------------------------------------------------------
+  /admin/carts:
+    get:
+      tags: [Admin — Carts]
+      operationId: adminGetAllCarts
+      summary: Lister tous les paniers
+      responses:
+        '200':
+          description: Liste des paniers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Cart'
+  /admin/carts/{id}:
+    get:
+      tags: [Admin — Carts]
+      operationId: adminGetCartById
+      summary: Détail d'un panier
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Panier retourné
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Cart'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Admin — Carts]
+      operationId: adminUpdateCartItems
+      summary: Mettre à jour les éléments d'un panier
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCartItemsInput'
+      responses:
+        '200':
+          description: Panier mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Admin — Carts]
+      operationId: adminDeleteCart
+      summary: Supprimer un panier
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Panier supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
   # MY SHOP (SHOP_MANAGER)
   # ---------------------------------------------------------------------------
   /myshop:
@@ -1237,6 +1392,156 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # CARTS & ORDERS (customer)
+  # ---------------------------------------------------------------------------
+  /carts:
+    get:
+      tags: [Customer]
+      operationId: getMyCart
+      summary: Récupérer le panier de l'utilisateur
+      responses:
+        '200':
+          description: Panier
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Cart'
+    post:
+      tags: [Customer]
+      operationId: createOrder
+      summary: Créer une commande depuis le panier
+      responses:
+        '201':
+          description: Commande créée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+
+  /carts/add:
+    post:
+      tags: [Customer]
+      operationId: addToCart
+      summary: Ajouter un article au panier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartInput'
+      responses:
+        '200':
+          description: Article ajouté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+
+  /carts/remove:
+    post:
+      tags: [Customer]
+      operationId: removeFromCart
+      summary: Retirer un article du panier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveFromCartInput'
+      responses:
+        '200':
+          description: Article retiré
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+
+  /orders:
+    get:
+      tags: [Customer]
+      operationId: getUserOrders
+      summary: Lister mes commandes
+      responses:
+        '200':
+          description: Liste des commandes
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+    post:
+      tags: [Customer]
+      operationId: createOrder
+      summary: Créer une commande (depuis panier)
+      responses:
+        '201':
+          description: Commande créée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+
+  /orders/{id}:
+    get:
+      tags: [Customer]
+      operationId: getOrderById
+      summary: Détail d'une commande
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Commande retournée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Customer]
+      operationId: cancelOrder
+      summary: Annuler une commande (statut PENDING)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Commande annulée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -1828,3 +2133,101 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    # --- Cart/Order schemas ---
+    CartItem:
+      type: object
+      properties:
+        article:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Article'
+        quantity:
+          type: integer
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/UserProfile'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        totalPrice:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+    AddToCartInput:
+      type: object
+      required: [articleId, quantity]
+      properties:
+        articleId:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+    RemoveFromCartInput:
+      type: object
+      required: [articleId]
+      properties:
+        articleId:
+          type: string
+    UpdateCartItemsInput:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [article, quantity]
+            properties:
+              article:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+    OrderItem:
+      type: object
+      properties:
+        article:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Article'
+        quantity:
+          type: integer
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/UserProfile'
+        shop:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Shop'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        totalPrice:
+          type: number
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED]
+        createdAt:
+          type: string
+          format: date-time
+    OrderStatusInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED]

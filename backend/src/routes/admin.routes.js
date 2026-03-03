@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/auth.middleware');
-const { authorize, isAdmin } = require('../middlewares/role.middleware');
+const { authorize } = require('../middlewares/role.middleware');
 const {
   getAllShops,
   getShopById,
@@ -12,29 +12,45 @@ const {
   createCategory,
   updateCategory,
   deleteCategory,
-  getDashboardStats
+  getDashboardStats,
+  getShopsByStatus,
+  getAllOrders,
+  getOrderById,
+  updateOrderStatus,
+  getAllCarts,
+  getCartById,
+  updateCartItems,
+  deleteCart
 } = require('../controllers/admin.controller');
 
-// Toutes les routes admin nécessitent d'être authentifié ET admin
-
 // ==================== SHOPS ====================
-// Méthode 1 : Utiliser authorize()
-router.get('/shops', protect, authorize('ADMIN'), getAllShops);
-router.get('/shops/:id', protect, authorize('ADMIN'), getShopById);
-router.put('/shops/:id/approve', protect, authorize('ADMIN'), approveShop);
-router.put('/shops/:id/suspend', protect, authorize('ADMIN'), suspendShop);
-router.delete('/shops/:id', protect, authorize('ADMIN'), deleteShop);
-
-// Méthode 2 : Utiliser isAdmin (équivalent mais plus court)
-// router.get('/shops', protect, isAdmin, getAllShops);
+router.use(protect, authorize('ADMIN')); // Toutes les routes suivantes nécessitent d'être authentifié et admin
+router.get('/shops', getAllShops);
+router.get('/shops/pending', getShopsByStatus('PENDING'));
+router.get('/shops/suspended', getShopsByStatus('SUSPENDED'));
+router.get('/shops/:id', getShopById);
+router.put('/shops/:id/approve', approveShop);
+router.put('/shops/:id/suspend', suspendShop);
+router.delete('/shops/:id', deleteShop);
 
 // ==================== CATEGORIES ====================
-router.get('/categories', protect, authorize('ADMIN'), getAllCategories);
-router.post('/categories', protect, authorize('ADMIN'), createCategory);
-router.put('/categories/:id', protect, authorize('ADMIN'), updateCategory);
-router.delete('/categories/:id', protect, authorize('ADMIN'), deleteCategory);
+router.get('/categories', getAllCategories);
+router.post('/categories', createCategory);
+router.put('/categories/:id', updateCategory);
+router.delete('/categories/:id', deleteCategory);
 
 // ==================== STATS ====================
-router.get('/stats/dashboard', protect, authorize('ADMIN'), getDashboardStats);
+router.get('/stats/dashboard', getDashboardStats);
+
+// ==================== ORDERS ====================
+router.get('/orders', getAllOrders);
+router.get('/orders/:id', getOrderById);
+router.post('/orders/:id/update-status', updateOrderStatus);
+
+// ==================== CARTS ====================
+router.get('/carts', getAllCarts);
+router.get('/carts/:id', getCartById);
+router.post('/carts/:id/update', updateCartItems);
+router.delete('/carts/:id', deleteCart);
 
 module.exports = router;

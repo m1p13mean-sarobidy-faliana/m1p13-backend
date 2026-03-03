@@ -1,6 +1,6 @@
 const Promotion = require('../models/promotion.model');
 const Product = require('../models/product.model');
-const Shop = require('../models/shop.models');
+const Shop = require('../models/shop.model');
 
 exports.getMyPromotions = async (req, res) => {
   try {

@@ -1,4 +1,4 @@
-const Shop = require('../models/shop.models');
+const Shop = require('../models/shop.model');
 const User = require('../models/user.model');
 
 exports.createShop = async (req, res) => {

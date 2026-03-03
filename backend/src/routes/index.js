@@ -11,6 +11,9 @@ router.use("/admin", require("./admin.routes"));
 
 // Routes publiques et acheteur
 router.use("/public", require("./public.routes"));
-router.use("/customer", require("./customer.routes"));
+router.use("/customers", require("./customer.routes"));
+
+router.use("/carts", require("./cart.routes"));
+router.use("/orders", require("./order.routes"));
 
 module.exports = router;

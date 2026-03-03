@@ -1,4 +1,4 @@
-const Shop = require('../models/shop.models');
+const Shop = require('../models/shop.model');
 const Product = require('../models/product.model');
 const Review = require('../models/review.model');
 const Promotion = require('../models/promotion.model');
