@@ -253,7 +253,6 @@ paths:
               properties:
                 email:
                   type: string
-                  format: email
       responses:
         '200':
           description: Email de réinitialisation envoyé (même réponse si l'email n'existe pas)
@@ -1484,7 +1483,6 @@ components:
       properties:
         email:
           type: string
-          format: email
         password:
           type: string
           format: password
@@ -1504,7 +1502,6 @@ components:
       properties:
         email:
           type: string
-          format: email
         password:
           type: string
           format: password
