@@ -23,6 +23,13 @@ const {
   deleteCart
 } = require('../controllers/admin.controller');
 
+const {
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser
+} = require('../controllers/user.controller');
+
 // ==================== SHOPS ====================
 router.use(protect, authorize('ADMIN')); // Toutes les routes suivantes nécessitent d'être authentifié et admin
 router.get('/shops', getAllShops);
@@ -32,6 +39,12 @@ router.get('/shops/:id', getShopById);
 router.put('/shops/:id/approve', approveShop);
 router.put('/shops/:id/suspend', suspendShop);
 router.delete('/shops/:id', deleteShop);
+
+// ==================== USERS ====================
+router.get('/users', protect, authorize('ADMIN'), getAllUsers);
+router.get('/users/:id', protect, authorize('ADMIN'), getUserById);
+router.put('/users/:id/role', protect, authorize('ADMIN'), updateUser);
+router.delete('/users/:id', protect, authorize('ADMIN'), deleteUser);
 
 // ==================== CATEGORIES ====================
 router.get('/categories', getAllCategories);

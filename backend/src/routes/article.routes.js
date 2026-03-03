@@ -10,6 +10,6 @@ router.get("/", protect, getAllArticles);
 router.get("/:id", protect, getAllArticlesById);
 router.post("/create/", protect, authorize('SHOP_MANAGER'), createArticle);
 router.put("/update/:id", protect, authorize('SHOP_MANAGER'), updateArticle);
-router.delete("/delete/:id", protect, authorize('SHOP_MANAGER'), deleteArticle);
+router.delete("/delete/:id", protect, authorize('SHOP_MANAGER', 'ADMIN'), deleteArticle);
 
 module.exports = router;

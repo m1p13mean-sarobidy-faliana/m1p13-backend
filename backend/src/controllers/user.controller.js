@@ -9,7 +9,7 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-exports.getAllUsersById = async (req, res) => {
+exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {

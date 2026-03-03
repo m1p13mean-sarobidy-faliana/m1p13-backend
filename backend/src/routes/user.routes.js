@@ -8,7 +8,7 @@ router.use(protect, authorize("ADMIN"))
 
 router.get("/", userController.getAllUsers);
 router.get("/search", userController.searchUsers);
-router.get("/:id", userController.getAllUsersById);
+router.get("/:id", userController.getUserById);
 router.post("/create", userController.createUser);
 router.put("/update/:id", userController.updateUser);
 router.delete("/delete/:id", userController.deleteUser);
