@@ -1,5 +1,5 @@
 {
-  "name": "@m1p13/client",
+  "name": "@m1p13mean-sarobidy-faliana/client",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "module": "./index.ts",
