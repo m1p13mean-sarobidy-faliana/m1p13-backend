@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc",
     "generate": "npx kubb -c kubb.config.ts",
-    "ng:gen": "npx openapi-generator-cli generate -i ../docs/api.yml -g typescript-angular -o ./",
+    "ng:gen": "npx openapi-generator-cli generate -i ../docs/openapi.yaml -g typescript-angular -o ./",
     "format": "prettier --write ./"
   },
   "peerDependencies": {

@@ -6,7 +6,7 @@ import { pluginOas } from "@kubb/plugin-oas";
 export default defineConfig({
   root: ".",
   input: {
-    path: "../docs/api.yml",
+    path: "../docs/openapi.yaml",
   },
   output: {
     path: "./gen",
