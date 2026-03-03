@@ -1,0 +1,36 @@
+name: Publish rest client
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish-to-npm-registry:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node & npm
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate & Publish to GitHub npm repo
+        run: |
+          npm run generate 
+          npm run ng:gen
+          mv gen/zod .
+          rm -rf gen
+          ./remove-ts-import.sh
+          npm run format
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_NPM_TOKEN }}" >> ~/.npmrc
+          echo "@${{ vars.NPM_USERNAME }}:registry=https://npm.pkg.github.com" >> ~/.npmrc
+          npm publish

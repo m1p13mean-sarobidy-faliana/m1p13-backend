@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "target": "es6",
+    "lib": ["es6", "dom"],
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": ".",
+    "typeRoots": ["node_modules/@types"],
+    "moduleResolution": "node"
+  },
+  "include": ["**/*"],
+  "exclude": ["dist", "node_modules"]
+}
