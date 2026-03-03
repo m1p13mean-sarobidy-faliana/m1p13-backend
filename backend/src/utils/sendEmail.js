@@ -37,7 +37,7 @@ const sendEmail = async (to, subject, htmlContent) => {
   try {
     const tr = await getTransporter();
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'no-reply@example.com',
+      from: 'sarobidy-faliana@m1p13.itu',
       to,
       subject,
       html: htmlContent
